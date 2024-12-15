@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'POST') {
         const novel: NovelWithOptionalId = req.body;
 
-        if (!novel.title || !Array.isArray(novel.chapters)) {
+        if (!novel.title) {
             res.status(400).json({ error: 'Invalid novel data' });
             return;
         }

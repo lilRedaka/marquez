@@ -1,11 +1,15 @@
-import { useState } from 'react';
-import { Button, Input, Form, Spin, Typography, FormInstance } from 'antd';
+import { useEffect, useState } from 'react';
+import { Button, Input, Form, Spin, Typography, FormInstance, Space } from 'antd';
+import { Novel } from '@/lib/db';
 
 const { TextArea } = Input;
 const { Title, Paragraph } = Typography;
 
 interface NovelFormProps {
-    onGenerate: (characters: string, environment: string, plot: string) => void;
+    onGenerate: (id: number, characters: string, environment: string, plot: string) => void;
+    handleSave: (id: number) => void;
+    novelId: number,
+    initData?: Novel;
     form: FormInstance<{
         title: string;
         characters: string;
@@ -14,14 +18,26 @@ interface NovelFormProps {
     }>
 }
 
-export default function NovelForm({ onGenerate, form }: NovelFormProps) {
-    const handleGenerate = () => {
-        // onGenerate(characters, environment, plot);
+export default function NovelForm({ onGenerate, handleSave, novelId, initData, form }: NovelFormProps) {
+    const handleGenerate = async () => {
+        const formData = form.getFieldsValue();
+        await onGenerate(novelId, formData.characters, formData.environment, formData.plot);
     };
+
+    useEffect(() => {
+        console.log("initData", initData)
+        if (initData) {
+            form.setFieldsValue({
+                title: initData.title,
+                characters: initData.characters,
+                environment: initData.environment,
+                plot: initData.plot,
+            });
+        }
+    }, [])
 
     return (
         <div>
-            <Title level={1}>Marquez</Title>
             <Form form={form} layout="vertical">
                 <Form.Item name="title" label="Title">
                     <Input />
@@ -32,8 +48,14 @@ export default function NovelForm({ onGenerate, form }: NovelFormProps) {
                 <Form.Item name="environment" label="Environment">
                     <TextArea rows={4} />
                 </Form.Item>
-                <Form.Item name="name" label="Plot">
+                <Form.Item name="plot" label="Plot">
                     <TextArea rows={4} />
+                </Form.Item>
+                <Form.Item>
+                    <Space>
+                        <Button type="primary" onClick={() => handleSave(novelId)}>Save</Button>
+                        <Button onClick={handleGenerate}>生成</Button>
+                    </Space>
                 </Form.Item>
             </Form>
         </div>

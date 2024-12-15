@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { readNovels } from '../../lib/db';
+import { readNovel } from '../../lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const novels = await readNovels();
-  res.status(200).json(novels);
+    const { id } = req.body;
+    const novels = await readNovel(id);
+    res.status(200).json(novels);
 }

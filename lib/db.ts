@@ -4,7 +4,7 @@ import { JSONFilePreset } from 'lowdb/node'
 export type Novel = {
     id: number;
     title: string;
-    chapters: Chapter[];
+    chapterIds: number[];
     characters: string;
     environment: string;
     plot: string;
@@ -52,9 +52,14 @@ export async function saveNovel(novel: NovelWithOptionalId) {
     await db.write();
 }
 
-export async function readNovels() {
+export async function readNovelList() {
     await db.read();
     return db.data?.novels || [];
+}
+
+export async function readNovel(id: number) {
+    await db.read();
+    return db.data?.novels.find(novel => novel.id === id);
 }
 
 export async function readChapters(id: number) {

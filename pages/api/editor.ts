@@ -31,7 +31,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             messages: [
                 {
                     role: 'system',
-                    content: '你是一个小说编辑器，负责审核和编辑生成的小说内容，确保其符合提示词要求。请直接输出修改后的内容。'
+                    content: `
+                            你是一个编辑校验员，负责审核和编辑生成的小说内容，确保其符合提示词要求。输出格式为json，其中包含以下字段：
+
+                            {
+                            "title": "小说章节标题",
+                            "content": "小说正文，约3000字。",
+                            "abstract": "小说摘要，供后续章节参考。"
+                            }
+
+                            请注意：
+                            1. 输出仅应包含上述字段的 JSON 数据。
+                            2. 确保 JSON 格式正确，包含有效的键和值，并用双引号包裹字符串。
+                            3. 不要包含其他内容，只输出符合要求的纯 JSON 格式。
+                              `
                 },
                 { role: 'user', content: prompt },
             ],

@@ -1,27 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Spin, List, Button } from 'antd';
 import { Novel } from '@/lib/db';
+import { Button, List, Spin } from 'antd';
+import React, { useEffect } from 'react';
 
-const Library: React.FC<{ newNovel: () => Promise<boolean> }> = ({ newNovel }) => {
-    const [novels, setNovels] = useState<Novel[]>([]);
-    const [listLoading, setListLoading] = useState(true);
+const Library: React.FC<{
+    newNovel: () => Promise<boolean>
+    readNovel: (id: number) => Promise<void>
+    fetchNovels: () => void
+    novels: Novel[]
+    loading: boolean
+}> = ({ newNovel, readNovel, fetchNovels, novels, loading }) => {
 
     useEffect(() => {
         fetchNovels();
-    }, []);
-
-    const fetchNovels = async () => {
-        try {
-            const response = await fetch('/api/novels');
-            const data = await response.json();
-            setNovels(data.novels);
-        } catch (error) {
-            console.error('Error fetching novels:', error);
-        } finally {
-            setListLoading(false);
-        }
-    };
-
+      }, []);
+      
     const addNovelHandler = async () => {
         const ok = await newNovel()
         if (ok) {
@@ -35,14 +27,16 @@ const Library: React.FC<{ newNovel: () => Promise<boolean> }> = ({ newNovel }) =
                 <Button type="primary" onClick={addNovelHandler}>Add Novel</Button>
             </div>
             <>
-                {listLoading ? (
+                {loading ? (
                     <Spin />
                 ) : (
                     <List
                         itemLayout="horizontal"
                         dataSource={novels}
                         renderItem={novel => (
-                            <List.Item>
+                            <List.Item
+                                actions={[<a key="list-loadmore-edit" onClick={() => readNovel(novel.id)}>read</a>]}
+                            >
                                 <List.Item.Meta
                                     title={novel.title}
                                 />

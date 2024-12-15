@@ -15,15 +15,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     });
 
-    const prompt = `请生成一章小说，内容应该包括以下要素：，
-                    \n\n人物：${characters}\n环境：${environment}\n情节：${plot}\n每章大约3000字,
+    const prompt = `请生成小说的一个章节，章节内容中不包含小标题，内容应该包括以下要素：，
+                    \n\n人物：${characters}\n环境：${environment}\n情节：${plot}\n,
                     请确保每个章节在结尾有一定的悬念或引人入胜的元素，为下一章的展开做铺垫。
                     `;
 
     const completion = await openai.chat.completions.create({
       model: 'qwen-plus',
       messages: [
-        { role: 'system', content: '你是一个小说生成器，可以根据用户提供的提示词生成小说内容。' },
+        {
+          role: 'system',
+          content: `你是一个小说作家，可以根据用户提供的提示词生成小说内容。
+                    每次生成小说的一个章节，字数约3000字。  
+                  `
+        },
         { role: 'user', content: prompt },
       ],
     });
