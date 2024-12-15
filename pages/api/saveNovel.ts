@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { saveNovel, Novel } from '@/lib/db';
 
+type NovelWithOptionalId = Omit<Novel, 'id'> & Partial<Pick<Novel, 'id'>>;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
-        const novel: Novel = req.body;
+        const novel: NovelWithOptionalId = req.body;
 
         if (!novel.title || !Array.isArray(novel.chapters)) {
             res.status(400).json({ error: 'Invalid novel data' });

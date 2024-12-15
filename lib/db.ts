@@ -5,6 +5,9 @@ export type Novel = {
     id: number;
     title: string;
     chapters: Chapter[];
+    characters: string;
+    environment: string;
+    plot: string;
 }
 
 export type Chapter = {
@@ -28,9 +31,24 @@ await db.read();
 // If file.json doesn't exist, db.data will be null
 // Set default data
 db.data ||= { novels: [], chapters: [] };
+type NovelWithOptionalId = Omit<Novel, 'id'> & Partial<Pick<Novel, 'id'>>;
 
-export async function saveNovel(novel: Novel) {
-    db.data?.novels.push(novel);
+export async function saveNovel(novel: NovelWithOptionalId) {
+    await db.read();
+    const existingNovelIndex = db.data?.novels.findIndex(n => n.id === novel.id);
+
+    if (novel?.id) {
+        // Update existing novel
+        if (existingNovelIndex !== undefined && existingNovelIndex >= 0) {
+            const oldVerisonNovel = db.data!.novels[existingNovelIndex];
+            db.data!.novels[existingNovelIndex] = { ...oldVerisonNovel, ...novel };
+        }
+    } else {
+        // Add new novel
+        const id = await getNextNovelId();
+        db.data?.novels.push({ id, ...novel });
+    }
+
     await db.write();
 }
 
@@ -52,6 +70,13 @@ export async function saveChapter(chapter: Chapter) {
 export async function getNextChapterId(): Promise<number> {
     await db.read();
     const chapters = db.data?.chapters || [];
+    const maxId = chapters.reduce((max, chapter) => Math.max(max, chapter.id), 0);
+    return maxId + 1;
+}
+
+export async function getNextNovelId(): Promise<number> {
+    await db.read();
+    const chapters = db.data?.novels || [];
     const maxId = chapters.reduce((max, chapter) => Math.max(max, chapter.id), 0);
     return maxId + 1;
 }

@@ -69,10 +69,34 @@ export default function Home() {
     },
   ]
 
+  const newNovel = async () => {
+    const newNovel: Omit<Novel, "id"> = {
+      title: "新小说",
+      chapters: [],
+      characters: "",
+      environment: "",
+      plot: "",
+    };
+
+    const res = await fetch('/api/saveNovel', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newNovel),
+    });
+
+    if (res.status !== 200) {
+      return false
+    }
+
+    return true
+  }
+
   return (
     <Layout style={{ minHeight: '100vh', padding: '20px' }}>
       <Sider width={200} style={{ background: '#fff' }}>
-        <Library />
+        <Library newNovel={newNovel} />
       </Sider>
       <Content>
         <Layout style={{ padding: '0 24px 24px' }}>
