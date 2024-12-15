@@ -44,12 +44,33 @@ export default function Home() {
   const handleGenerateNovel = async (id: number, characters: string, environment: string, plot: string) => {
     setAIProgress(1);
     try {
+      const novelResponse = await fetch('/api/readNovel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      const novelData = await novelResponse.json();
+      const index = novelData.chapterIds.length + 1;
+      let previousChapter: string = '';
+      if (novelData.chapterIds.length > 0) {
+        const lastChapterId = novelData.chapterIds[novelData.chapterIds.length - 1];
+        const lastChapterResponse = await fetch(`/api/readChapter?id=${lastChapterId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const lastChapterData = await lastChapterResponse.json();
+        previousChapter = lastChapterData.content;
+      }
       const response = await fetch('/api/writer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ characters, environment, plot }),
+        body: JSON.stringify({ characters, environment, plot, index, previousChapter }),
       });
 
       const data = await response.json();
@@ -61,7 +82,7 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ chapter: data.chapter, characters, environment, plot }),
+          body: JSON.stringify({ chapter: data.chapter, characters, environment, plot, previousChapter }),
         });
 
         let editData: any = await editResponse.json();
@@ -75,11 +96,9 @@ export default function Home() {
           body: JSON.stringify({ novelId: id, title: editDataJSON?.title, content: editDataJSON?.content }),
         });
         setAIProgress(90)
-        if (editDataJSON?.abstract && editDataJSON.title) {
-          console.log(editDataJSON.title)
-          console.log(editDataJSON.abstract)
-          plot = plot + "\n" + editDataJSON.title + ":" + editDataJSON.abstract
-          formIns.setFieldValue('plot', plot)
+        if (editDataJSON?.abstract) {
+          const newPlot = plot + "\n" + editDataJSON.abstract
+          formIns.setFieldValue("plot", newPlot)
           await handleSave(id)
         }
         setAIProgress(100)
@@ -138,7 +157,6 @@ export default function Home() {
   }
 
   const readNovel = async (id: number) => {
-    console.log("novel id:", id)
     formIns.resetFields()
     setCollapsedItems([])
     const response = await fetch('/api/readNovel', {
@@ -148,7 +166,6 @@ export default function Home() {
       },
       body: JSON.stringify({ id }),
     });
-    debugger
     if (response.ok) {
       const data = await response.json();
       const collapseItems = [
@@ -159,16 +176,14 @@ export default function Home() {
         },
       ]
       const chapterIds = data.chapterIds || []
-      
+
       for (const chapterId of chapterIds) {
-        const chapterResponse = await fetch('/api/readChapter', {
-          method: 'POST',
+        const chapterResponse = await fetch(`/api/readChapter?id=${chapterId}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ id: chapterId }),
         });
-        console.log("chapterResponse:",chapterResponse)
         if (chapterResponse.ok) {
           const chapterData = await chapterResponse.json();
           collapseItems.push({
@@ -178,8 +193,6 @@ export default function Home() {
           });
         }
       }
-
-      console.log(collapseItems)
 
       setCollapsedItems(collapseItems)
     } else {
@@ -222,22 +235,6 @@ export default function Home() {
             }
             <Collapse items={collapsedItems} className='mt-2' />
           </Layout>
-
-
-
-          {/* {generatedChapter && (
-          <div>
-            <Title level={2}>Generated Chapter</Title>
-            <Paragraph>{generatedChapter}</Paragraph>
-          </div>
-        )}
-
-        {editedChapter && (
-          <div>
-            <Title level={2}>Edited Chapter</Title>
-            <Paragraph>{editedChapter}</Paragraph>
-          </div>
-        )} */}
         </Content>
       </Layout>
     </Layout>

@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { chapter, characters, environment, plot } = req.body;
+    const { chapter, characters, environment, plot, previousChapter } = req.body;
 
     if (!chapter || !characters || !environment || !plot) {
         return res.status(400).json({ error: 'Missing required fields: chapter, characters, environment, plot' });
@@ -21,10 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     环境：${environment}
     情节：${plot}
     
+    以下是上一章内容：
+    ${previousChapter}
+
     以下是生成的章节内容：
     ${chapter}
     
-    请检查生成的内容，确保与提示词一致，并修正任何错误或不合理的部分。`;
+    请检查生成的内容，确保与提示词一致，以及与上一章内容连贯，并修正任何错误或不合理的部分。`;
 
         const completion = await openai.chat.completions.create({
             model: 'qwen-plus',

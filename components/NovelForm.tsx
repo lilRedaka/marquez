@@ -25,13 +25,12 @@ export default function NovelForm({ onGenerate, handleSave, novelId, initData, f
     };
 
     useEffect(() => {
-        console.log("initData", initData)
         if (initData) {
             form.setFieldsValue({
                 title: initData.title,
                 characters: initData.characters,
                 environment: initData.environment,
-                plot: initData.plot,
+                plot: initData.plot
             });
         }
     }, [])

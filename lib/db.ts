@@ -62,9 +62,9 @@ export async function readNovel(id: number) {
     return db.data?.novels.find(novel => novel.id === id);
 }
 
-export async function readChapters(id: number) {
+export async function readChapter(id: number) {
     await db.read();
-    return db.data?.chapters.find(chapter => chapter.novelId === id);
+    return db.data?.chapters.find(chapter => chapter.id === id);
 }
 
 export async function saveChapter(chapter: Chapter) {
