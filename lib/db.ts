@@ -34,22 +34,27 @@ db.data ||= { novels: [], chapters: [] };
 type NovelWithOptionalId = Omit<Novel, 'id'> & Partial<Pick<Novel, 'id'>>;
 
 export async function saveNovel(novel: NovelWithOptionalId) {
-    await db.read();
-    const existingNovelIndex = db.data?.novels.findIndex(n => n.id === novel.id);
+    try {
+        await db.read();
+        const existingNovelIndex = db.data?.novels.findIndex(n => n.id === novel.id);
 
-    if (novel?.id) {
-        // Update existing novel
-        if (existingNovelIndex !== undefined && existingNovelIndex >= 0) {
-            const oldVerisonNovel = db.data!.novels[existingNovelIndex];
-            db.data!.novels[existingNovelIndex] = { ...oldVerisonNovel, ...novel };
+        if (novel?.id) {
+            // Update existing novel
+            if (existingNovelIndex !== undefined && existingNovelIndex >= 0) {
+                const oldVerisonNovel = db.data!.novels[existingNovelIndex];
+                db.data!.novels[existingNovelIndex] = { ...oldVerisonNovel, ...novel };
+            }
+        } else {
+            // Add new novel
+            const id = await getNextNovelId();
+            db.data?.novels.push({ id, ...novel });
         }
-    } else {
-        // Add new novel
-        const id = await getNextNovelId();
-        db.data?.novels.push({ id, ...novel });
+
+        await db.write();
+    } catch (error) {
+        console.log(error)
     }
 
-    await db.write();
 }
 
 export async function readNovelList() {
