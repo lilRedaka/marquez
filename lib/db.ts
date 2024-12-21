@@ -52,7 +52,7 @@ export async function saveNovel(novel: NovelWithOptionalId) {
 
         await db.write();
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 
 }

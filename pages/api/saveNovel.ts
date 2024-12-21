@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             await saveNovel(novel);
             res.status(200).json({ message: 'Novel saved successfully' });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({ error: 'Failed to save novel' });
         }
     } else {
